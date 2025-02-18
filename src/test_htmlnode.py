@@ -60,6 +60,6 @@ class TestHTMLNode(unittest.TestCase):
             ],
         )
         self.assertEqual(node.to_html(), "<p><b>Bold text</b>Normal text<code>Code text</code><i>italic text</i></p>")
-
+         
 if __name__ == "__main__":
     unittest.main()

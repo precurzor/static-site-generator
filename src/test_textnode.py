@@ -1,5 +1,6 @@
 import unittest
 from textnode import *
+from inline_markdown import *
 
 
 class TestTextNode(unittest.TestCase):
@@ -43,6 +44,85 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
     def test_bad_tag(self):
         node = TextNode("blurg", "Corrupted text", TextType.TEXT)
         self.assertRaises(ValueError)
+
+# split_nodes_delimiter tests:
+class TestInlineMarkdown(unittest.TestCase):
+    def test_inline_md_code(self):
+        node = TextNode("This is text with a `code block` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_code_space(self):
+        node = TextNode("This is text with a `   ` word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("   ", TextType.CODE),
+            TextNode(" word", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_italic(self):
+        node = TextNode("This is text with a *italic block* word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("italic block", TextType.ITALIC),
+            TextNode(" word", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_italic_empty(self):
+        node = TextNode("This is text with a ** word", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "*", TextType.ITALIC)
+        self.assertEqual(new_nodes, [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("", TextType.ITALIC),
+            TextNode(" word", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_bold_no_lead(self):
+        node = TextNode("**bold** text", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [
+            TextNode("", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_bold_double(self):
+        node = TextNode("Hello **world** and **Python**", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [
+            TextNode("Hello ", TextType.TEXT),
+            TextNode("world", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("Python", TextType.BOLD),
+            TextNode("", TextType.TEXT),
+            ]
+        )
+
+    def test_inline_md_not_closed(self):
+        node = TextNode("Hello **world", TextType.TEXT)
+        with self.assertRaises(Exception):
+            split_nodes_delimiter([node], "**", TextType.BOLD)
+
+def test_inline_md_already_bold():
+    node = TextNode("Already bold", TextType.BOLD)
+    new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+    self.assertEqual(new_nodes, [
+        TextNode("Already bold", TextType.BOLD)
+        ]
+    )
+
+
 
 if __name__ == "__main__":
     unittest.main()
