@@ -1,6 +1,6 @@
 import unittest
 from textnode import *
-from inline_markdown import *
+from translate_markdown import *
 
 
 class TestTextNode(unittest.TestCase):
@@ -114,11 +114,11 @@ class TestInlineMarkdown(unittest.TestCase):
         with self.assertRaises(Exception):
             split_nodes_delimiter([node], "**", TextType.BOLD)
 
-def test_inline_md_already_bold():
-    node = TextNode("Already bold", TextType.BOLD)
-    new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
-    self.assertEqual(new_nodes, [
-        TextNode("Already bold", TextType.BOLD)
+    def test_inline_md_already_bold(self):
+        node = TextNode("Already bold", TextType.BOLD)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [
+            TextNode("Already bold", TextType.BOLD)
         ]
     )
 
