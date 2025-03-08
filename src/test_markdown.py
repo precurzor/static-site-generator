@@ -1,5 +1,6 @@
 import unittest
 from translate_markdown import *
+from block_markdown import *
 
 
 class TestMdNode(unittest.TestCase):
@@ -116,3 +117,81 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             nodes,
         )
+
+# Test block_markdown
+class TestMarkdownToHTML(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_markdown_to_blocks_newlines(self):
+        md = """
+This is **bolded** paragraph
+
+
+
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+# Test block identification
+
+class TestBlockIdentification(unittest.TestCase):
+    def test_block_to_block_type_paragraph(self):
+        block = "This is **bolded** paragraph"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_unordered_list(self):
+        block = "- This is a list\n- with items"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.UNORDERED_LIST)
+
+    def test_block_to_block_heading(self):
+        block = "### Heading"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.HEADING)
+
+    def test_block_to_block_ordered_list(self):
+        block = "1. First item\n2. Second item\n3. Third item"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.ORDERED_LIST)
+
+    def test_block_to_block_code(self):
+        block = "```\ncode\n```"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.CODE)
+
+    def test_block_to_block_quote(self):
+        block = "> First line of quote\n> Second line of quote\n> leading to third line of quote"
+        id = block_to_block_type(block)
+        self.assertEqual(id, BlockType.QUOTE)
